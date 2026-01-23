@@ -6,6 +6,7 @@ library(tibble)
 library(ggplot2)
 library(viridis)
 library(cowplot)
+library(limma)
 
 # establish theme for plots
 ggplot2::theme_set(
