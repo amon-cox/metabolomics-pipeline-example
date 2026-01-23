@@ -1,6 +1,10 @@
 ## 02) Overview analysis of sample behavior
 if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
 
+# sample total intensity — quality control
+### 1) compute row sums (per sample) and plot distribution by treatment/cohort.
+### 2) depict in boxplots, identify low-intensity samples
+
 # Principal Components Analysis
 set.seed(123)
 
@@ -33,6 +37,8 @@ do_pca <- function(.peaks, .mode) {
         loadings = loadings_matrix,
         prop_var = variance
     )
+
+    return(pca_object)
 
 }
 
@@ -87,7 +93,9 @@ final_scores_plot <- cowplot::plot_grid(
 )
 
 cowplot::save_plot(
-    filename = "output/pca_scores_plot.png",
+    filename = "output/plots/pca_scores_plot.png",
     plot = final_scores_plot,
     bg = "white"
 )
+
+### 3) consider outlier detection. Calculate the Euclidean distance of each sample from the group centroid in PC1–PC2 and flag anything beyond 3x sd or IQR
