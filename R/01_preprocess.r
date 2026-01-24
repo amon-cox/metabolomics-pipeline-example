@@ -1,10 +1,10 @@
 ## 01) Organizing both metabolomics datasets and establishing groups.
 # load raw LC-MS/MS peaks data
-peaks_negative_raw <- read.csv("data_raw/peaks_negative.csv", header = TRUE)
-peaks_positive_raw <- read.csv("data_raw/peaks_positive.csv", header = TRUE)
+intensity_negative_raw <- read.csv("data_raw/intensity_negative.csv", header = TRUE)
+intensity_positive_raw <- read.csv("data_raw/intensity_positive.csv", header = TRUE)
 
 # merge duplicate peaks (same mz_ratio and rt_min) by summing intensities
-peaks_negative <- peaks_negative_raw |>
+intensity_negative <- intensity_negative_raw |>
     group_by(mz_ratio, rt_min) |>
     summarize(
         across(
@@ -20,7 +20,7 @@ peaks_negative <- peaks_negative_raw |>
     mutate(mz_rt_min = paste0(mz_ratio, "_", rt_min)) |>
     relocate(mz_rt_min)
 
-peaks_positive <- peaks_positive_raw |>
+intensity_positive <- intensity_positive_raw |>
     group_by(mz_ratio, rt_min) |>
     summarize(
         across(
@@ -36,32 +36,57 @@ peaks_positive <- peaks_positive_raw |>
     mutate(mz_rt_min = paste0(mz_ratio, "_", rt_min)) |>
     relocate(mz_rt_min)
 
-# export feature metadata
+# export information describing the LC-MS/MS peaks
 feature_info <- c("calculated_mw", "mz_ratio", "rt_min", "reference_ion") # identify feature metadata columns
 
 feature_metadata <- bind_rows( # stacks the feature info for both sets
-    select(peaks_negative, all_of(c("mz_rt_min", feature_info))) %>% # grabs feature info from negative set
+    select(intensity_negative, all_of(c("mz_rt_min", feature_info))) |> # grabs feature info from negative set
         mutate(mode = "negative"), # adds an identifier for the LC-MS/MS negative-mode set
-    select(peaks_positive, all_of(c("mz_rt_min", feature_info))) %>% 
+    select(intensity_positive, all_of(c("mz_rt_min", feature_info))) |> 
         mutate(mode = "positive"),
 )
 
 write.csv(feature_metadata, file = "data_raw/feature_metadata.csv", quote = TRUE, row.names = FALSE) # export feature metadata
 
-# apply log2 transformation to peak area, then export
-peaks_negative_log2 <- peaks_negative |>
+# perform median normalization followed by log2 transformation
+sample_medians_neg <- intensity_negative |>
+    select(!any_of(feature_info)) |> # ignore feature metadata
+    summarize(across(where(is.numeric), \(x) median(x, na.rm = TRUE))) # grab median peak from each sample
+
+sample_medians_pos <- intensity_positive |>
+    select(!any_of(feature_info)) |> 
+    summarize(across(where(is.numeric), \(x) median(x, na.rm = TRUE)))
+
+target_median_neg <- sample_medians_neg |> 
+    summarize(across(everything(), median)) |> # find the median across all (negative) LC-MS/MS peaks
+    pull(1) # grab the value, not the column
+
+target_median_pos <- sample_medians_pos |> 
+    summarize(across(everything(), median)) |>
+    pull(1)
+
+intensity_norm_log2_neg <- intensity_negative |>
     select(!any_of(feature_info)) |> # remove feature metadata
     mutate(across(
-        .cols = where(is.numeric), # only target remaining numeric columns
-        .fns = ~ log2(.x + 1e-6)) # add small offset to avoid instances of log2(0)
-    )
- 
-peaks_positive_log2 <- peaks_positive |>
+        .cols = where(is.numeric), # only target sample columns, not mz_rt_min
+        .fns = ~ .x / sample_medians_neg[[cur_column()]] * target_median_neg # applies median normalization
+    )) |>
+    mutate(across(
+        .cols = where(is.numeric), # agian, only target sample columns
+        .fns = ~ log2(.x + 1e-6) # add small offset to avoid instances of log2(0)
+    ))
+
+intensity_norm_log2_pos <- intensity_positive |>
     select(!any_of(feature_info)) |>
     mutate(across(
         .cols = where(is.numeric),
-        .fns = ~ log2(.x + 1e-6))
-    )
+        .fns = ~ .x / sample_medians_pos[[cur_column()]] * target_median_pos
+    )) |>
+    mutate(across(
+        .cols = where(is.numeric),
+        .fns = ~ log2(.x + 1e-6)
+    ))
 
-write.csv(peaks_negative_log2, file = "data_processed/peaks_negative_log2.csv", row.names = FALSE)
-write.csv(peaks_positive_log2, file = "data_processed/peaks_positive_log2.csv", row.names = FALSE)
+# export for inspection
+write.csv(intensity_norm_log2_neg, file = "data_processed/01_intensity_norm_log2_neg.csv", row.names = FALSE)
+write.csv(intensity_norm_log2_pos, file = "data_processed/01_intensity_norm_log2_pos.csv", row.names = FALSE)
