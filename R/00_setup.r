@@ -4,9 +4,11 @@ library(dplyr)
 library(tidyr)
 library(tibble)
 library(ggplot2)
+library(vegan)
+library(pairwiseAdonis)
+library(limma)
 library(viridis)
 library(cowplot)
-library(limma)
 
 # establish theme for plots
 ggplot2::theme_set(
@@ -14,6 +16,6 @@ ggplot2::theme_set(
         ggplot2::theme(
             panel.grid.major = element_line(color = "grey80"),
             panel.grid.minor = element_blank(),
-            plot.margin = margin(6, 0, 6, 0)
+            plot.margin = margin(0.2, 0.2, 0.2, 0.2, unit = "cm")
         )
 )

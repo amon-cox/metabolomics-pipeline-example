@@ -78,7 +78,7 @@ detect_outliers <- function(.pca, .mode, .md = sample_metadata, .group = "treatm
         ) |>
         ungroup() |>
         mutate(mode = .mode) |>
-        select(sample, mode, all_of(.group), group_dist, Q1, Q3, IQR, upper_bound, is_outlier, everything())
+        select(sample, mode, all_of(.group), is_outlier, group_dist, Q1, Q3, IQR, upper_bound, everything())
     
     return(outliers)
 
@@ -89,7 +89,7 @@ pca_outliers <- bind_rows( # merge function output for both modes
     detect_outliers(pca_positive, "pos")
 )
 
-write.csv(pca_outliers, file = "output/tables/02_pca_outliers.csv", row.names = FALSE)
+write.csv(pca_outliers, file = "output/tables/02_pca_outlier_flags.csv", row.names = FALSE)
 
 # plotting the principal components
 plot_scores <- function(.pca, .mode, .md = sample_metadata) {
@@ -116,8 +116,8 @@ scores_plot_positive <- plot_scores(.pca = pca_positive, .mode = "pos")
 
 # arrange plots for export
 plot_row <- cowplot::plot_grid(
-    scores_plot_negative + theme(legend.position = "none", plot.margin = unit(c(0, 0.25, 0, 0.25), "cm")),
-    scores_plot_positive + theme(legend.position = "none", plot.margin = unit(c(0, 0.25, 0, 0.25), "cm")),
+    scores_plot_negative + theme(legend.position = "none"),
+    scores_plot_positive + theme(legend.position = "none"),
     align = "vh",
     nrow = 1
 )
@@ -138,3 +138,49 @@ cowplot::save_plot(
     bg = "white",
     base_height = 4
 )
+
+# Permutational Analysis of Variance on treatment groups. Hn is that all group centroids are the same
+do_permanova <- function(.intensities, .mode, .md = sample_metadata) {
+
+    distances <- .intensities |>
+        tibble::column_to_rownames(var = "mz_rt_min") |> # convert column to rownames before transpose
+        t() |> # rotate matrix
+        as.data.frame() |>
+        dist(method = "euclidean") # compute euclidean distances between samples
+
+    permanova <- vegan::adonis2(
+        formula = distances ~ treatment, # set up model for PERMANOVA
+        data = .md # specify where the info for "treatment" comes from
+    )
+
+    pairwise_permanova <- pairwiseAdonis::pairwise.adonis( # conduct several paired analyses ...
+        x = distances,
+        factors = .md$treatment,
+        p.adjust.m = "bonferroni" # ... then correct p values for multiple comparisons
+    )
+
+    write.csv( # export global PERMANOVA
+        as.data.frame(permanova),
+        file = paste0("output/tables/02_permanova_global_", .mode, ".csv"),
+        row.names = TRUE
+    )
+
+    write.csv( # export pairwise comparisons
+        as.data.frame(pairwise_permanova),
+        file = paste0("output/tables/02_permanova_pairwise_", .mode, ".csv"),
+        row.names = FALSE
+    )
+
+    group_stats <- list(
+        distance = distances,
+        global = permanova,
+        pairwise = pairwise_permanova,
+        mode = .mode
+    )
+
+    return(group_stats)
+
+}
+
+permanova_neg <- do_permanova(.intensities = intensity_norm_log2_neg, .mode = "neg")
+permanova_pos <- do_permanova(intensity_norm_log2_pos, "pos")
