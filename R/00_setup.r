@@ -1,5 +1,6 @@
 ## 00) Set up R environment
 # load necessary packages
+library(rmarkdown)
 library(dplyr)
 library(tidyr)
 library(tibble)
