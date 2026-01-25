@@ -100,7 +100,7 @@ plot_scores <- function(.pca, .mode, .md = sample_metadata) {
         left_join(y = .md, by = "sample") |>
         ggplot(aes(x = PC1, y = PC2, color = treatment)) +
             geom_point(aes(shape = cohort), alpha = 0.75, size = 2) +
-            coord_fixed(ratio = 1) + # set ratio so that PC scales are apparent
+            coord_fixed() + # set ratio so that axes are on the same scale
             scale_color_viridis(discrete = TRUE, option = "viridis", direction = -1, drop = FALSE) +
             theme(plot.subtitle = element_text(face = "bold")) +
             labs(
