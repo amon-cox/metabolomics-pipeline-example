@@ -1,6 +1,5 @@
 ## 00) Set up R environment
 # load necessary packages
-library(rmarkdown)
 library(dplyr)
 library(tidyr)
 library(tibble)
@@ -10,6 +9,7 @@ library(pairwiseAdonis)
 library(limma)
 library(viridis)
 library(cowplot)
+library(rmarkdown)
 
 # establish theme for plots
 ggplot2::theme_set(
