@@ -8,7 +8,7 @@ The (anonymized and modified) data represent panels of untargeted LC–MS featur
 - Preprocessing: merge duplicate LC-MS peaks, sample-wise median normalization, log2 transformation.
 - Sample analysis: Principal Components Analysis (PCA), PCA-based outlier detection, and Permutational Analysis of Variance (PERMANOVA) for treatment effects.
 - Feature analysis: linear models with cohort blocking and multiple contrasts (limma).
-- Reproducibility: environment managed by renv
+- Reproducibility: environment managed by renv.
 
 ### Repository Structure
 - run_all.r
