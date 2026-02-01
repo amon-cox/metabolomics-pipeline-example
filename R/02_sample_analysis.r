@@ -107,7 +107,9 @@ plot_scores <- function(.pca, .mode, .md = sample_metadata) {
                 x = paste0("PC1 (", .pca[['prop_var']][1], "%)"),
                 y = paste0("PC2 (", .pca[['prop_var']][2], "%)"),
                 subtitle = paste0("PCA on ", .mode, "-mode intensities")
-            )
+            ) +
+            geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+            geom_vline(xintercept = 0, linetype = "dashed", color = "black")
 
 }
 

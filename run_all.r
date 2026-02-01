@@ -5,3 +5,10 @@ source("R/00_setup.r")
 source("R/01_preprocess.r")
 source("R/02_sample_analysis.r")
 source("R/03_feature_analysis.r")
+
+# execute the Quarto overview file
+quarto::quarto_render(
+    input = "overview.qmd",
+    output_format = "pdf",
+    output_file  = "overview.pdf"
+)

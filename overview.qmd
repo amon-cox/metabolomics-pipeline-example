@@ -1,0 +1,82 @@
+---
+title: "Metabolomics Pipeline Overview"
+format: pdf
+---
+
+## Introduction
+A basic analysis pipeline in R for untargeted LC-MS metabolomics, including quality control, normalization, PCA overview of sample behavior, and differential feature analysis with linear models. The data are panels of untargeted LC–MS features from positive and negative ionization mode runs, such as metabolites measured from tissue, stool samples, or microbial cultures. In this hypothetical scenario, the data have been structured to resemble samples belonging to control subjects, one of two treatments (tr1 or tr2), or a dual‑treatment group (tr1+tr2). The pipeline demonstrates a conventional approach to characterizing metabolomic differences among these groups.
+
+```{r}
+#| label: setup
+#| include: false
+# load packages needed for the report
+library(dplyr)
+library(ggplot2)
+library(viridis)
+library(cowplot)
+
+# establish theme for most plots
+ggplot2::theme_set(
+    cowplot::theme_half_open(12) +
+        ggplot2::theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            plot.margin = margin(0.2, 0.2, 0.2, 0.2, unit = "cm")
+        )
+)
+```
+
+## PCA
+(testing PCA plotting in .qmd document. Will contain discussion of this method used on the data)
+
+```{r}
+#| label: PCA figure
+#| echo: true
+# grab PCA scores
+pca_scores_neg <- read.csv("data_processed/02_pca_scores_neg.csv", header = TRUE)
+pca_scores_pos <- read.csv("data_processed/02_pca_scores_pos.csv", header = TRUE)
+sample_metadata <- read.csv("data_raw/sample_metadata.csv", header = TRUE)
+
+# plot the scores, adapting the function from 02_sample_analysis.r
+plot_scores <- function(.pca_scores, .mode, .md = sample_metadata) {
+
+    # set up 
+    scores_plot <- .pca_scores |>
+        select(sample, PC1, PC2) |>
+        left_join(y = .md, by = "sample") |>
+        ggplot(aes(x = PC1, y = PC2, color = treatment)) +
+            geom_point(aes(shape = cohort), alpha = 0.75, size = 2) +
+            coord_fixed() + # set ratio so that axes are on the same scale
+            scale_color_viridis(discrete = TRUE, option = "viridis", direction = -1, drop = FALSE) +
+            theme(plot.subtitle = element_text(face = "bold")) +
+            labs(
+                #x = paste0("PC1 (", .pca_scores[['prop_var']][1], "%)"), # omit for now, might go back and export variances
+                #y = paste0("PC2 (", .pca_scores[['prop_var']][2], "%)"),
+                subtitle = paste0("PCA on ", .mode, "-mode intensities")
+            ) +
+            geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+            geom_vline(xintercept = 0, linetype = "dashed", color = "black")
+
+}
+
+scores_plot_negative <- plot_scores(.pca_scores = pca_scores_neg, .mode = "neg")
+scores_plot_positive <- plot_scores(.pca_scores = pca_scores_pos, .mode = "pos")
+
+# arrange plots for export
+plot_row <- cowplot::plot_grid(
+    scores_plot_negative + theme(legend.position = "none"),
+    scores_plot_positive + theme(legend.position = "none"),
+    align = "vh",
+    nrow = 1
+)
+
+legend <- cowplot::get_legend(
+    scores_plot_negative + theme(legend.box.margin = margin(0, 0, 0, 12))
+)
+
+final_scores_plot <- cowplot::plot_grid(
+    plot_row,
+    legend,
+    rel_widths = c(2, .4)
+)
+```

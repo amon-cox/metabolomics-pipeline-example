@@ -10,12 +10,13 @@ library(limma)
 library(viridis)
 library(cowplot)
 library(rmarkdown)
+library(quarto)
 
-# establish theme for plots
+# establish theme for most plots
 ggplot2::theme_set(
     cowplot::theme_half_open(12) +
         ggplot2::theme(
-            panel.grid.major = element_line(color = "grey80"),
+            panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             plot.margin = margin(0.2, 0.2, 0.2, 0.2, unit = "cm")
         )
