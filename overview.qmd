@@ -40,7 +40,7 @@ ggplot2::theme_set(
 
 {{< pagebreak >}}
 
-# Distribution
+# Data Distribution
 The LC-MS intensities of metabolomics data typically skew to the right. Data normalization is required to improve comparability across samples and help stabilize variance before actual analysis can begin. The figure below demonstrates how median normalization reduces between-sample differences in overall intensity while preserving the underlying variability that's of interest in the data. The data are also transformed into a log2 scale to reduce domination by extreme values and bring the data closer to normality.
 
 ```{r}
@@ -74,8 +74,6 @@ p_intensity_distribution
 
 # Sample Analysis — PCA
 To gauge the overall structure of the metabolomic profiles (samples), a Principal Components Analysis is used. The median-normalized, log2-transformed intensities are next centered and scaled, then decomposed into a set of orthogonal principal components that capture the dominant sources of variance in the dataset.
-
-In the figure below, principal component (PC) 1 illustrates a divide amongst the samples based on the treatment group, with controls and tr1 contrasted from tr2 and the dual-treatment (tr1+tr2). Additionally, PC 1 captures 35.7% of the variance in the data for the negative-mode intensities and 29.11% for the positive-mode intensities, meaning the treatment variable has substantial influence on the overall data structure (as might be expected). PC 2 does not appear to highlight any meaningful secondary structure in the data.
 
 ```{r}
 #| label: PCA figure
@@ -137,7 +135,21 @@ final_scores_plot <- cowplot::plot_grid(
 final_scores_plot
 ```
 
+Principal component (PC) 1 illustrates a divide amongst the samples based on the treatment group, with controls and tr1 contrasted from tr2 and the dual-treatment (tr1+tr2). Additionally, PC 1 captures 35.7% of the variance in the data for the negative-mode intensities and 29.11% for the positive-mode intensities, meaning the treatment variable has substantial influence on the overall data structure (as might be expected). PC 2 does not appear to highlight any meaningful secondary structure in the data.
+
 {{< pagebreak >}}
 
 # Feature Analysis — limma
-(describe and depict the feature-level analyses)
+To evaluate the underlying feature fluctuations responsible for the observed sample differences, linear models for microarrays (limma) were applied to the median-normalized, log2-transformed intensities. This approach tests each LC-MS feature for differential abundance across treatment groups while controlling the false discovery rate using multiple-testing correction. The figures below depict the differentially abundant features for each pairwise comparison, highlighting metabolites that most strongly distinguish the control, single-treatment (tr1, tr2), and dual-treatment (tr1+tr2) conditions.
+
+```{r}
+#| label: volcano plots
+
+knitr::include_graphics("output/plots/03_limma_contrasts_neg.png")
+knitr::include_graphics("output/plots/03_limma_contrasts_pos.png")
+```
+
+# Upcoming
+- Add table containing differential feature counts per contrast and percent-of-features exhibiting significant differences.
+- Putative feature annotation using KEGG (example workflow).
+- Additional differentiation / signal-detection with PLS-DA (supervised method).
