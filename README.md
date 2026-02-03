@@ -15,7 +15,6 @@ The data are panels of untargeted LC–MS features from positive and negative io
 
 ## Repository Structure
 
-- run_all.r
 - R/
   - 00_setup.r
   - 01_preprocess.r
@@ -26,7 +25,9 @@ The data are panels of untargeted LC–MS features from positive and negative io
 - output/
   - plots/
   - tables/
-  - overview.qmd
+- overview.qmd
+- overview.pdf
+- run_all.r
 
 ## How to Run
 

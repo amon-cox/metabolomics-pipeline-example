@@ -1,10 +1,18 @@
 ---
 title: "Metabolomics Pipeline Overview"
-format: pdf
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    geometry: "margin=0.5in"
+    fontsize: 11pt
 execute:
   echo: false
   message: false
   warning: false
+knitr:
+  opts_chunk:
+    fig.align: "center"
 ---
 
 # Introduction
@@ -12,6 +20,7 @@ A basic analysis pipeline in R for untargeted LC-MS metabolomics, including qual
 
 ```{r}
 #| label: setup
+
 # load packages needed for the report
 library(dplyr)
 library(ggplot2)
@@ -29,18 +38,61 @@ ggplot2::theme_set(
 )
 ```
 
-# PCA
-(testing PCA plotting in .qmd document. Will contain discussion of this method used on the data)
+{{< pagebreak >}}
+
+# Distribution
+The LC-MS intensities of metabolomics data typically skew to the right. Data normalization is required to improve comparability across samples and help stabilize variance before actual analysis can begin. The figure below demonstrates how median normalization reduces between-sample differences in overall intensity while preserving the underlying variability that's of interest in the data. The data are also transformed into a log2 scale to reduce domination by extreme values and bring the data closer to normality.
+
+```{r}
+#| label: Normalization figure
+#| fig-width: 4.94
+#| fig-height: 8
+
+# grab long-format table of raw and normalized intensities
+intensity_long_log2 <- read.csv("data_processed/01_intensity_long_log2.csv", header = TRUE)
+
+# copy plot code from 01_preprocess.r
+p_intensity_distribution <- intensity_long_log2 |> 
+    mutate(stage = factor(stage, levels = c("raw", "median-norm"))) |> # adjust aesthetics so that "raw" data is shown on top
+    ggplot(aes(x = intensity_log2, y = sample)) + # create boxplots of the data
+        geom_boxplot(outlier.size = 0.5) +
+        facet_wrap(~stage + mode) + # calculate medians and IQR by stage and mode
+        expand_limits(x = 0) +
+        scale_x_continuous(expand = c(0,0)) +
+        theme(
+            strip.text = element_text(face = "bold"),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.title = element_text(face = "bold")
+        ) +
+        labs(x = "log2 intensity")
+
+p_intensity_distribution
+```
+
+{{< pagebreak >}}
+
+# Sample Analysis — PCA
+To gauge the overall structure of the metabolomic profiles (samples), a Principal Components Analysis is used. The median-normalized, log2-transformed intensities are next centered and scaled, then decomposed into a set of orthogonal principal components that capture the dominant sources of variance in the dataset.
+
+In the figure below, principal component (PC) 1 illustrates a divide amongst the samples based on the treatment group, with controls and tr1 contrasted from tr2 and the dual-treatment (tr1+tr2). Additionally, PC 1 captures 35.7% of the variance in the data for the negative-mode intensities and 29.11% for the positive-mode intensities, meaning the treatment variable has substantial influence on the overall data structure (as might be expected). PC 2 does not appear to highlight any meaningful secondary structure in the data.
 
 ```{r}
 #| label: PCA figure
+#| fig-width: 6.472
+#| fig-height: 4
+
 # grab PCA scores
 pca_scores_neg <- read.csv("data_processed/02_pca_scores_neg.csv", header = TRUE)
+pca_variance_neg <- read.csv("data_processed/02_pca_variance_neg.csv", header = TRUE)
+
 pca_scores_pos <- read.csv("data_processed/02_pca_scores_pos.csv", header = TRUE)
+pca_variance_pos <- read.csv("data_processed/02_pca_variance_pos.csv", header = TRUE)
+
 sample_metadata <- read.csv("data_raw/sample_metadata.csv", header = TRUE)
 
 # plot the scores, adapting the function from 02_sample_analysis.r
-plot_scores <- function(.pca_scores, .mode, .md = sample_metadata) {
+plot_scores <- function(.pca_scores, .pca_variance, .mode, .md = sample_metadata) {
 
     # set up 
     scores_plot <- .pca_scores |>
@@ -52,8 +104,8 @@ plot_scores <- function(.pca_scores, .mode, .md = sample_metadata) {
             scale_color_viridis(discrete = TRUE, option = "viridis", direction = -1, drop = FALSE) +
             theme(plot.subtitle = element_text(face = "bold")) +
             labs(
-                #x = paste0("PC1 (", .pca_scores[['prop_var']][1], "%)"), # omit for now, might go back and export variances
-                #y = paste0("PC2 (", .pca_scores[['prop_var']][2], "%)"),
+                x = paste0("PC1 (", .pca_variance[1,1], "%)"),
+                y = paste0("PC2 (", .pca_variance[2,1], "%)"),
                 subtitle = paste0("PCA on ", .mode, "-mode intensities")
             ) +
             geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
@@ -61,19 +113,19 @@ plot_scores <- function(.pca_scores, .mode, .md = sample_metadata) {
 
 }
 
-scores_plot_negative <- plot_scores(.pca_scores = pca_scores_neg, .mode = "neg")
-scores_plot_positive <- plot_scores(.pca_scores = pca_scores_pos, .mode = "pos")
+scores_plot_negative <- plot_scores(.pca_scores = pca_scores_neg, .pca_variance = pca_variance_neg, .mode = "neg")
+scores_plot_positive <- plot_scores(.pca_scores = pca_scores_pos, .pca_variance = pca_variance_pos, .mode = "pos")
 
 # arrange plots for export
 plot_row <- cowplot::plot_grid(
-    scores_plot_negative + theme(legend.position = "none"),
-    scores_plot_positive + theme(legend.position = "none"),
+    scores_plot_negative + theme(legend.position = "none", plot.margin = margin(0, 0.5, 0, 0.5, unit = "cm")),
+    scores_plot_positive + theme(legend.position = "none", plot.margin = margin(0, 0.5, 0, 0.5, unit = "cm")),
     align = "vh",
     nrow = 1
 )
 
 legend <- cowplot::get_legend(
-    scores_plot_negative + theme(legend.box.margin = margin(0, 0, 0, 12))
+    scores_plot_negative + theme(legend.box.margin = margin(0, 0, 0, 1, unit = "cm"))
 )
 
 final_scores_plot <- cowplot::plot_grid(
@@ -84,3 +136,8 @@ final_scores_plot <- cowplot::plot_grid(
 
 final_scores_plot
 ```
+
+{{< pagebreak >}}
+
+# Feature Analysis — limma
+(describe and depict the feature-level analyses)

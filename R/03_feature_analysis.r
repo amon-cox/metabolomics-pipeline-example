@@ -87,7 +87,7 @@ export_limma_res <- function(.limma_output, .mode) { # function to export each c
     }
 
     # build volcano plots in a panel, per mode
-    volcano_plot <- res_list |>
+    p_volcano <- res_list |>
         bind_rows(.id = "contrast") |> # collapse list into large dataframe
         mutate(sig_feature = p_adj_BH < .05 & abs(log2FC) > 1) |>
         ggplot(aes(x = log2FC, y = -log10(p_adj_BH), color = sig_feature)) +
@@ -108,7 +108,7 @@ export_limma_res <- function(.limma_output, .mode) { # function to export each c
 
     cowplot::save_plot(
         filename = paste0("output/plots/03_limma_contrasts_", .mode, ".png"),
-        plot = volcano_plot,
+        plot = p_volcano,
         bg = "white"
     )
 

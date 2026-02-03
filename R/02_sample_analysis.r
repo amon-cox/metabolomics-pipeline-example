@@ -26,6 +26,7 @@ do_pca <- function(.intensities, .mode) {
     # export data objects
     write.csv(scores_matrix, file = paste0("data_processed/02_pca_scores_", .mode, ".csv"), row.names = FALSE, quote = FALSE)
     write.csv(loadings_matrix, file = paste0("data_processed/02_pca_loadings_", .mode, ".csv"), row.names = FALSE, quote = FALSE)
+    write.csv(variance, file = paste0("data_processed/02_pca_variance_", .mode, ".csv"), row.names = FALSE, quote = FALSE)
 
     # prepare scores and loadings as a list output
     pca_object <- list(
@@ -95,7 +96,7 @@ write.csv(pca_outliers, file = "output/tables/02_pca_outlier_flags.csv", row.nam
 plot_scores <- function(.pca, .mode, .md = sample_metadata) {
 
     # set up 
-    scores_plot <- .pca[['scores']] |>
+    p_scores <- .pca[['scores']] |>
         select(sample, PC1, PC2) |>
         left_join(y = .md, by = "sample") |>
         ggplot(aes(x = PC1, y = PC2, color = treatment)) +
@@ -113,30 +114,30 @@ plot_scores <- function(.pca, .mode, .md = sample_metadata) {
 
 }
 
-scores_plot_negative <- plot_scores(.pca = pca_negative, .mode = "neg")
-scores_plot_positive <- plot_scores(.pca = pca_positive, .mode = "pos")
+p_scores_negative <- plot_scores(.pca = pca_negative, .mode = "neg")
+p_scores_positive <- plot_scores(.pca = pca_positive, .mode = "pos")
 
 # arrange plots for export
-plot_row <- cowplot::plot_grid(
-    scores_plot_negative + theme(legend.position = "none"),
-    scores_plot_positive + theme(legend.position = "none"),
+p_scores_row <- cowplot::plot_grid(
+    p_scores_negative + theme(legend.position = "none"),
+    p_scores_positive + theme(legend.position = "none"),
     align = "vh",
     nrow = 1
 )
 
 legend <- cowplot::get_legend(
-    scores_plot_negative + theme(legend.box.margin = margin(0, 0, 0, 12))
+    p_scores_negative + theme(legend.box.margin = margin(0, 0, 0, 12))
 )
 
-final_scores_plot <- cowplot::plot_grid(
-    plot_row,
+p_scores_final <- cowplot::plot_grid(
+    p_scores_row,
     legend,
     rel_widths = c(2, .4)
 )
 
 cowplot::save_plot(
     filename = "output/plots/02_pca_scores_neg_pos.png",
-    plot = final_scores_plot,
+    plot = p_scores_final,
     bg = "white",
     base_height = 4
 )
