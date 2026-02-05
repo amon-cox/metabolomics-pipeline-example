@@ -19,7 +19,7 @@ do_pca <- function(.intensities, .mode) {
     
     loadings_matrix <- pca$rotation |> # extract feature contributions from PC space
         as.data.frame() |>
-        tibble::rownames_to_column(var = "peak")
+        tibble::rownames_to_column(var = "mz_rt_min")
     
     variance <- round(pca$sdev^2 / sum(pca$sdev^2), 4) * 100 # convert proportions of variance into percentage
 
@@ -42,10 +42,6 @@ do_pca <- function(.intensities, .mode) {
 pca_negative <- do_pca(.intensities = intensity_norm_log2_neg, .mode = "neg")
 pca_positive <- do_pca(intensity_norm_log2_pos, "pos")
 
-# load sample metadata
-sample_metadata <- read.csv("data_raw/sample_metadata.csv", header = TRUE) |>
-    mutate(treatment = factor(treatment, levels = c("control", "tr1", "tr2", "tr1+tr2")))
-
 # detect outliers in PCs 1 & 2 space per treatment group
 detect_outliers <- function(.pca, .mode, .md = sample_metadata, .group = "treatment", k_iqr = 1.5) {
 
@@ -66,7 +62,7 @@ detect_outliers <- function(.pca, .mode, .md = sample_metadata, .group = "treatm
         y = centroids,
         by = .group
     ) |>
-        mutate(group_dist = sqrt((PC1 - centroid_PC1)^2 + (PC2 - centroid_PC2)^2)) # calculates samples' distance from group centroid
+        mutate(group_dist = sqrt((PC1 - centroid_PC1)^2 + (PC2 - centroid_PC2)^2)) # Pythagorean theorem; samples' distance from centroid
     
     outliers <- distances |>
         group_by(.data[[.group]]) |> # set grouping to treatment variable
@@ -79,7 +75,7 @@ detect_outliers <- function(.pca, .mode, .md = sample_metadata, .group = "treatm
         ) |>
         ungroup() |>
         mutate(mode = .mode) |>
-        select(sample, mode, all_of(.group), is_outlier, group_dist, Q1, Q3, IQR, upper_bound, everything())
+        select(sample, is_outlier, mode, all_of(.group), group_dist, Q1, Q3, IQR, upper_bound, everything())
     
     return(outliers)
 

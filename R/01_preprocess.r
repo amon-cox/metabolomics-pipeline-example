@@ -43,7 +43,7 @@ feature_metadata <- bind_rows( # stacks the feature info for both sets
     select(intensity_negative, all_of(c("mz_rt_min", feature_info))) |> # grabs feature info from negative set
         mutate(mode = "negative"), # adds an identifier for the LC-MS/MS negative-mode set
     select(intensity_positive, all_of(c("mz_rt_min", feature_info))) |> 
-        mutate(mode = "positive"),
+        mutate(mode = "positive")
 )
 
 write.csv(feature_metadata, file = "data_raw/feature_metadata.csv", quote = TRUE, row.names = FALSE) # export feature metadata

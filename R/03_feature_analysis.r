@@ -1,4 +1,6 @@
 ## 03) Analysis of feature behavior
+if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
+
 # analyze features using linear models for microarray data
 design_matrix <- model.matrix(~ treatment, data = sample_metadata) # expands metadata into dummy variables for a design matrix
 colnames(design_matrix) <- c("Intercept", "tr1", "tr2", "tr1_tr2") # replace "+" with "_" to satisfy R naming conventions
