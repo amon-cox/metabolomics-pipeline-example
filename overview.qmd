@@ -18,26 +18,6 @@ knitr:
 # Introduction
 A basic analysis pipeline in R for untargeted LC-MS metabolomics, including quality control, normalization, PCA overview of sample behavior, and differential feature analysis with linear models. The data are panels of untargeted LC–MS features from positive and negative ionization mode runs, such as metabolites measured from tissue, stool samples, or microbial cultures. In this hypothetical scenario, the data have been structured to resemble samples belonging to control subjects, one of two treatments (tr1 or tr2), or a dual‑treatment group (tr1+tr2). The pipeline demonstrates a conventional approach to characterizing metabolomic differences among these groups.
 
-```{r}
-#| label: setup
-
-# load packages needed for the report
-library(dplyr)
-library(ggplot2)
-library(viridis)
-library(cowplot)
-
-# establish theme for most plots
-ggplot2::theme_set(
-    cowplot::theme_half_open(12) +
-        ggplot2::theme(
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            plot.margin = margin(0.2, 0.2, 0.2, 0.2, unit = "cm")
-        )
-)
-```
-
 {{< pagebreak >}}
 
 # Data Distribution
@@ -45,29 +25,9 @@ The LC-MS intensities of metabolomics data typically skew to the right. Data nor
 
 ```{r}
 #| label: Normalization figure
-#| fig-width: 4.94
-#| fig-height: 8
+#| out-width: 65%
 
-# grab long-format table of raw and normalized intensities
-intensity_long_log2 <- read.csv("data_processed/01_intensity_long_log2.csv", header = TRUE)
-
-# copy plot code from 01_preprocess.r
-p_intensity_distribution <- intensity_long_log2 |> 
-    mutate(stage = factor(stage, levels = c("raw", "median-norm"))) |> # adjust aesthetics so that "raw" data is shown on top
-    ggplot(aes(x = intensity_log2, y = sample)) + # create boxplots of the data
-        geom_boxplot(outlier.size = 0.5) +
-        facet_wrap(~stage + mode) + # calculate medians and IQR by stage and mode
-        expand_limits(x = 0) +
-        scale_x_continuous(expand = c(0,0)) +
-        theme(
-            strip.text = element_text(face = "bold"),
-            axis.text.y = element_blank(),
-            axis.ticks.y = element_blank(),
-            axis.title = element_text(face = "bold")
-        ) +
-        labs(x = "log2 intensity")
-
-p_intensity_distribution
+knitr::include_graphics("output/plots/01_sample_distribution.png")
 ```
 
 {{< pagebreak >}}
@@ -77,62 +37,8 @@ To gauge the overall structure of the metabolomic profiles (samples), a Principa
 
 ```{r}
 #| label: PCA figure
-#| fig-width: 6.472
-#| fig-height: 4
 
-# grab PCA scores
-pca_scores_neg <- read.csv("data_processed/02_pca_scores_neg.csv", header = TRUE)
-pca_variance_neg <- read.csv("data_processed/02_pca_variance_neg.csv", header = TRUE)
-
-pca_scores_pos <- read.csv("data_processed/02_pca_scores_pos.csv", header = TRUE)
-pca_variance_pos <- read.csv("data_processed/02_pca_variance_pos.csv", header = TRUE)
-
-sample_metadata <- read.csv("data_raw/sample_metadata.csv", header = TRUE)
-
-# plot the scores, adapting the function from 02_sample_analysis.r
-plot_scores <- function(.pca_scores, .pca_variance, .mode, .md = sample_metadata) {
-
-    # set up 
-    scores_plot <- .pca_scores |>
-        select(sample, PC1, PC2) |>
-        left_join(y = .md, by = "sample") |>
-        ggplot(aes(x = PC1, y = PC2, color = treatment)) +
-            geom_point(aes(shape = cohort), alpha = 0.75, size = 2) +
-            coord_fixed() + # set ratio so that axes are on the same scale
-            scale_color_viridis(discrete = TRUE, option = "viridis", direction = -1, drop = FALSE) +
-            theme(plot.subtitle = element_text(face = "bold")) +
-            labs(
-                x = paste0("PC1 (", .pca_variance[1,1], "%)"),
-                y = paste0("PC2 (", .pca_variance[2,1], "%)"),
-                subtitle = paste0("PCA on ", .mode, "-mode intensities")
-            ) +
-            geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-            geom_vline(xintercept = 0, linetype = "dashed", color = "black")
-
-}
-
-scores_plot_negative <- plot_scores(.pca_scores = pca_scores_neg, .pca_variance = pca_variance_neg, .mode = "neg")
-scores_plot_positive <- plot_scores(.pca_scores = pca_scores_pos, .pca_variance = pca_variance_pos, .mode = "pos")
-
-# arrange plots for export
-plot_row <- cowplot::plot_grid(
-    scores_plot_negative + theme(legend.position = "none", plot.margin = margin(0, 0.5, 0, 0.5, unit = "cm")),
-    scores_plot_positive + theme(legend.position = "none", plot.margin = margin(0, 0.5, 0, 0.5, unit = "cm")),
-    align = "vh",
-    nrow = 1
-)
-
-legend <- cowplot::get_legend(
-    scores_plot_negative + theme(legend.box.margin = margin(0, 0, 0, 1, unit = "cm"))
-)
-
-final_scores_plot <- cowplot::plot_grid(
-    plot_row,
-    legend,
-    rel_widths = c(2, .4)
-)
-
-final_scores_plot
+knitr::include_graphics("output/plots/02_pca_scores_neg_pos.png")
 ```
 
 Principal component (PC) 1 illustrates a divide amongst the samples based on the treatment group, with controls and tr1 contrasted from tr2 and the dual-treatment (tr1+tr2). Additionally, PC 1 captures 35.7% of the variance in the data for the negative-mode intensities and 29.11% for the positive-mode intensities, meaning the treatment variable has substantial influence on the overall data structure (as might be expected). PC 2 does not appear to highlight any meaningful secondary structure in the data.
@@ -143,13 +49,51 @@ Principal component (PC) 1 illustrates a divide amongst the samples based on the
 To evaluate the underlying feature fluctuations responsible for the observed sample differences, linear models for microarrays (limma) were applied to the median-normalized, log2-transformed intensities. This approach tests each LC-MS feature for differential abundance across treatment groups while controlling the false discovery rate using multiple-testing correction. The figures below depict the differentially abundant features for each pairwise comparison, highlighting metabolites that most strongly distinguish the control, single-treatment (tr1, tr2), and dual-treatment (tr1+tr2) conditions.
 
 ```{r}
-#| label: volcano plots
+#| label: Volcano plots
+#| out-height: 30%
 
 knitr::include_graphics("output/plots/03_limma_contrasts_neg.png")
 knitr::include_graphics("output/plots/03_limma_contrasts_pos.png")
 ```
 
+{{< pagebreak >}}
+
+# Supervised Analysis — sparse PLS-DA
+(sparse Partial Least Squares Discriminant Analysis)
+
+```{r}
+#| lable: PLS-DA variates
+
+knitr::include_graphics("output/plots/04_plsda_samples_neg.png")
+knitr::include_graphics("output/plots/04_plsda_samples_pos.png")
+```
+
+(description of sample plots)
+(introduce the means of exploring LC-MS peak behaviors through plotVar and plotLoadings outputs)
+
+```{r}
+#| lable: sPLS-DA negative-mode
+#| out-height: 75%
+
+knitr::include_graphics("output/plots/04_plsda_comp1_neg.png")
+knitr::include_graphics("output/plots/04_plsda_comp2_neg.png")
+```
+
+(explanatory text for neg-mode sPLSDA)
+
+```{r}
+#| lable: sPLS-DA positive-mode
+#| out-height: 75%
+
+knitr::include_graphics("output/plots/04_plsda_comp1_pos.png")
+knitr::include_graphics("output/plots/04_plsda_comp2_pos.png")
+```
+
+(explanatory text for pos-mode sPLSDA)
+
+{{< pagebreak >}}
+
 # Upcoming
 - Add table containing differential feature counts per contrast and percent-of-features exhibiting significant differences.
+- Incorporate more methodology discussion
 - Putative feature annotation using KEGG (example workflow).
-- Additional differentiation / signal-detection with PLS-DA (supervised method).

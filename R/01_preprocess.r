@@ -1,4 +1,6 @@
 ## 01) Organizing both metabolomics datasets and establishing groups.
+if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
+
 # load raw LC-MS/MS peaks data
 intensity_negative_raw <- read.csv("data_raw/intensity_negative.csv", header = TRUE)
 intensity_positive_raw <- read.csv("data_raw/intensity_positive.csv", header = TRUE)

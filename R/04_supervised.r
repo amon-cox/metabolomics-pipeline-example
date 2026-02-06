@@ -1,5 +1,6 @@
 ## 04) Supervised method for sample analysis
 if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
+set.seed(123)
 
 # conduct a sparse Partial Least Squares Discriminant Analysis
 do_splsda <- function(.intensities, .mode, .md = sample_metadata) {
@@ -52,17 +53,17 @@ export_splsda <- function(.s_model, .mode) {
     .s_model$variates$X |> # export full sample information; variates
         as.data.frame() |>
         rownames_to_column(var = "sample") |>
-        write.csv(file = paste0("data_processed/04_splsda_variates_", .mode, ".csv"), row.names = FALSE)
+        write.csv(file = paste0("data_processed/04_plsda_variates_", .mode, ".csv"), row.names = FALSE)
     
     .s_model$loadings$X |> # export full feature information; loadings
         as.data.frame() |>
         rownames_to_column(var = "mz_rt_min") |>
-        write.csv(file = paste0("data_processed/04_splsda_sparse_loadings_", .mode, ".csv"), row.names = FALSE)
+        write.csv(file = paste0("data_processed/04_plsda_sparse_loadings_", .mode, ".csv"), row.names = FALSE)
     
     .s_model$loadings$Y |> # export loadings associations with treatment groups
         as.data.frame() |>
         rownames_to_column(var = "treatment") |>
-        write.csv(file = paste0("output/tables/04_splsda_loadings_association_", .mode, ".csv"), row.names = FALSE)
+        write.csv(file = paste0("output/tables/04_plsda_loadings_association_", .mode, ".csv"), row.names = FALSE)
     
     # prepare retained features for export
     select_features <- full_join(
@@ -75,13 +76,13 @@ export_splsda <- function(.s_model, .mode) {
 
     write.csv(
         select_features,
-        file = paste0("output/tables/04_splsda_select_features_", .mode, ".csv"),
+        file = paste0("output/tables/04_plsda_select_features_", .mode, ".csv"),
         row.names = FALSE
     )
 
     # export mixOmics' default plots. Need to use traditional R object setup and dev.off routine
     png( # plot the samples in PLS-DA space
-        filename = paste0("output/plots/04_splsda_samples_", .mode, ".png"),
+        filename = paste0("output/plots/04_plsda_samples_", .mode, ".png"),
         width = 6, height = 6, units = "in", res = 300
     )
 
@@ -99,7 +100,7 @@ export_splsda <- function(.s_model, .mode) {
     dev.off()
 
     png(
-        filename = paste0("output/plots/04_splsda_features_", .mode, ".png"),
+        filename = paste0("output/plots/04_plsda_features_", .mode, ".png"),
         width = 6, height = 6, units = "in", res = 300
     )
     
@@ -112,7 +113,7 @@ export_splsda <- function(.s_model, .mode) {
 
 
     png( # plot the association between features and component 1
-        filename = paste0("output/plots/04_spslda_comp1_", .mode, ".png")
+        filename = paste0("output/plots/04_plsda_comp1_", .mode, ".png")
     )
 
     plotLoadings(
@@ -125,7 +126,7 @@ export_splsda <- function(.s_model, .mode) {
     dev.off()
 
     png( # plot the association between features and component 2
-        filename = paste0("output/plots/04_spslda_comp2_", .mode, ".png")
+        filename = paste0("output/plots/04_plsda_comp2_", .mode, ".png")
     )
 
     plotLoadings(

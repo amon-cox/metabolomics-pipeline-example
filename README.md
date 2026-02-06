@@ -51,5 +51,4 @@ source("run_all.r")
 ### Upcoming
 
 - Putative feature annotation using KEGG (example workflow).
-- Additional differentiation / signal-detection with PLS-DA (supervised method).
-- Update Quarto overview to display code blocks with descriptions.
+- Update Quarto overview with methodology discussion
