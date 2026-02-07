@@ -39,7 +39,7 @@ kegg_compounds_list <- lapply( # parse each entry into a data.frame, within a li
 
 kegg_compounds <- bind_rows(kegg_compounds_list) # collapse list into a data.frame/tibbble. The info is now easier to work with
 
-kegg_compounds <- kegg_compounds |> # convoluted extra step to clean up names and pathway lists
+kegg_compounds <- kegg_compounds |> # convoluted extra step to clean up names and pathways lists. Not strictly necessary
     mutate(
         name = gsub(";+", ";", name),
         name = gsub("^;\\s*|\\s*;$", "", name),

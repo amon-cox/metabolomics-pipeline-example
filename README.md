@@ -50,5 +50,4 @@ source("run_all.r")
 
 ### Upcoming
 
-- Putative feature annotation using KEGG (example workflow).
 - Update Quarto overview with methodology discussion

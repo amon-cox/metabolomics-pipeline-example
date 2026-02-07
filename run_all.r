@@ -12,7 +12,7 @@ if (!file.exists(file.path("data_processed", "06_kegg_compounds.tsv"))) { # chec
   source(file.path("R", "06a_download_kegg_cpds.R")) # time-consuming script to access full compound info from KEGG
 }
 
-#source(file.path("R", "06b_annotate_with_kegg.r"))
+source(file.path("R", "06b_annotate_kegg.r"))
 
 # execute the Quarto overview file
 quarto::quarto_render(input = "overview.qmd", output_format = "pdf")

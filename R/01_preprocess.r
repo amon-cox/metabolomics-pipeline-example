@@ -116,12 +116,6 @@ intensity_long_log2 <- bind_rows( # gather the raw and normalized-log2 data into
         )
     )
 
-write.csv( # export the long-data formatted table for easy re-plotting in the Quarto report
-    intensity_long_log2,
-    file = file.path("data_processed", "01_intensity_long_log2.csv"),
-    row.names = FALSE
-)
-
 p_intensity_distribution <- intensity_long_log2 |> # create boxplots of the data
     ggplot(aes(x = intensity_log2, y = sample)) +
         geom_boxplot(outlier.size = 0.5) +

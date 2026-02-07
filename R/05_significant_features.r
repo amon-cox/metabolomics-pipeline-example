@@ -19,7 +19,7 @@ features_to_annotate <- lapply(
     FUN = read_path
 ) |>
     bind_rows() |>
-    left_join(y = select(feature_metadata, mz_rt_min, calculated_mw, mode), by = "mz_rt_min") |> # add in feature information
+    left_join(y = select(feature_metadata, mz_rt_min, calculated_mw, mz_ratio, rt_min, mode), by = "mz_rt_min") |> # add in feature information
     select(-source_file) |>
     distinct() |>
     arrange(calculated_mw, mode)
