@@ -2,8 +2,8 @@
 if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
 
 # load raw LC-MS/MS peaks data
-intensity_negative_raw <- read.csv("data_raw/intensity_negative.csv", header = TRUE)
-intensity_positive_raw <- read.csv("data_raw/intensity_positive.csv", header = TRUE)
+intensity_negative_raw <- read.csv(file.path("data_raw", "intensity_negative.csv"), header = TRUE)
+intensity_positive_raw <- read.csv(file.path("data_raw", "intensity_positive.csv"), header = TRUE)
 
 # merge duplicate peaks (same mz_ratio and rt_min) by summing intensities
 intensity_negative <- intensity_negative_raw |>
@@ -48,7 +48,7 @@ feature_metadata <- bind_rows( # stacks the feature info for both sets
         mutate(mode = "positive")
 )
 
-write.csv(feature_metadata, file = "data_raw/feature_metadata.csv", quote = TRUE, row.names = FALSE) # export feature metadata
+write.csv(feature_metadata, file = file.path("data_raw", "feature_metadata.csv"), quote = TRUE, row.names = FALSE) # export feature metadata
 
 # perform median normalization followed by log2 transformation
 sample_medians_neg <- intensity_negative |>
@@ -90,8 +90,8 @@ intensity_norm_log2_pos <- intensity_positive |>
     ))
 
 # export for inspection
-write.csv(intensity_norm_log2_neg, file = "data_processed/01_intensity_norm_log2_neg.csv", row.names = FALSE)
-write.csv(intensity_norm_log2_pos, file = "data_processed/01_intensity_norm_log2_pos.csv", row.names = FALSE)
+write.csv(intensity_norm_log2_neg, file = file.path("data_processed", "01_intensity_norm_log2_neg.csv"), row.names = FALSE)
+write.csv(intensity_norm_log2_pos, file = file.path("data_processed", "01_intensity_norm_log2_pos.csv"), row.names = FALSE)
 
 # plot comparisons of sample-wise data before and after normalization & transformation
 if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
@@ -118,7 +118,7 @@ intensity_long_log2 <- bind_rows( # gather the raw and normalized-log2 data into
 
 write.csv( # export the long-data formatted table for easy re-plotting in the Quarto report
     intensity_long_log2,
-    file = "data_processed/01_intensity_long_log2.csv",
+    file = file.path("data_processed", "01_intensity_long_log2.csv"),
     row.names = FALSE
 )
 
@@ -137,7 +137,7 @@ p_intensity_distribution <- intensity_long_log2 |> # create boxplots of the data
         labs(x = "log2 intensity")
 
 cowplot::save_plot(
-    filename = "output/plots/01_sample_distribution.png",
+    filename = file.path("output", "plots", "01_sample_distribution.png"),
     plot = p_intensity_distribution,
     bg = "white",
     base_height = 8,

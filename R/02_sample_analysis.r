@@ -24,9 +24,9 @@ do_pca <- function(.intensities, .mode) {
     variance <- round(pca$sdev^2 / sum(pca$sdev^2), 4) * 100 # convert proportions of variance into percentage
 
     # export data objects
-    write.csv(scores_matrix, file = paste0("data_processed/02_pca_scores_", .mode, ".csv"), row.names = FALSE, quote = FALSE)
-    write.csv(loadings_matrix, file = paste0("data_processed/02_pca_loadings_", .mode, ".csv"), row.names = FALSE, quote = FALSE)
-    write.csv(variance, file = paste0("data_processed/02_pca_variance_", .mode, ".csv"), row.names = FALSE, quote = FALSE)
+    write.csv(scores_matrix, file = file.path("data_processed", paste0("02_pca_scores_", .mode, ".csv")), row.names = FALSE, quote = FALSE)
+    write.csv(loadings_matrix, file = file.path("data_processed", paste0("02_pca_loadings_", .mode, ".csv")), row.names = FALSE, quote = FALSE)
+    write.csv(variance, file = file.path("data_processed", paste0("02_pca_variance_", .mode, ".csv")), row.names = FALSE, quote = FALSE)
 
     # prepare scores and loadings as a list output
     pca_object <- list(
@@ -86,7 +86,7 @@ pca_outliers <- bind_rows( # merge function output for both modes
     detect_outliers(pca_positive, "pos")
 )
 
-write.csv(pca_outliers, file = "output/tables/02_pca_outlier_flags.csv", row.names = FALSE)
+write.csv(pca_outliers, file = file.path("output", "tables", "02_pca_outlier_flags.csv"), row.names = FALSE)
 
 # plotting the principal components
 plot_scores <- function(.pca, .mode, .md = sample_metadata) {
@@ -132,7 +132,7 @@ p_scores_final <- cowplot::plot_grid(
 )
 
 cowplot::save_plot(
-    filename = "output/plots/02_pca_scores_neg_pos.png",
+    filename = file.path("output", "plots", "02_pca_scores_neg_pos.png"),
     plot = p_scores_final,
     bg = "white",
     base_height = 4
@@ -160,13 +160,13 @@ do_permanova <- function(.intensities, .mode, .md = sample_metadata) {
 
     write.csv( # export global PERMANOVA
         as.data.frame(permanova),
-        file = paste0("output/tables/02_permanova_global_", .mode, ".csv"),
+        file = file.path("output", "tables", paste0("02_permanova_global_", .mode, ".csv")),
         row.names = TRUE
     )
 
     write.csv( # export pairwise comparisons
         as.data.frame(pairwise_permanova),
-        file = paste0("output/tables/02_permanova_pairwise_", .mode, ".csv"),
+        file = file.path("output", "tables", paste0("02_permanova_pairwise_", .mode, ".csv")),
         row.names = FALSE
     )
 

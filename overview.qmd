@@ -27,7 +27,7 @@ The LC-MS intensities of metabolomics data typically skew to the right. Data nor
 #| label: Normalization figure
 #| out-width: 65%
 
-knitr::include_graphics("output/plots/01_sample_distribution.png")
+knitr::include_graphics(file.path("output", "plots", "01_sample_distribution.png"))
 ```
 
 {{< pagebreak >}}
@@ -38,7 +38,7 @@ To gauge the overall structure of the metabolomic profiles (samples), a Principa
 ```{r}
 #| label: PCA figure
 
-knitr::include_graphics("output/plots/02_pca_scores_neg_pos.png")
+knitr::include_graphics(file.path("output", "plots", "02_pca_scores_neg_pos.png"))
 ```
 
 Principal component (PC) 1 illustrates a divide amongst the samples based on the treatment group, with controls and tr1 contrasted from tr2 and the dual-treatment (tr1+tr2). Additionally, PC 1 captures 35.7% of the variance in the data for the negative-mode intensities and 29.11% for the positive-mode intensities, meaning the treatment variable has substantial influence on the overall data structure (as might be expected). PC 2 does not appear to highlight any meaningful secondary structure in the data.
@@ -52,8 +52,8 @@ To evaluate the underlying feature fluctuations responsible for the observed sam
 #| label: Volcano plots
 #| out-height: 30%
 
-knitr::include_graphics("output/plots/03_limma_contrasts_neg.png")
-knitr::include_graphics("output/plots/03_limma_contrasts_pos.png")
+knitr::include_graphics(file.path("output", "plots", "03_limma_contrasts_neg.png"))
+knitr::include_graphics(file.path("output", "plots", "03_limma_contrasts_pos.png"))
 ```
 
 {{< pagebreak >}}
@@ -64,8 +64,8 @@ knitr::include_graphics("output/plots/03_limma_contrasts_pos.png")
 ```{r}
 #| lable: PLS-DA variates
 
-knitr::include_graphics("output/plots/04_plsda_samples_neg.png")
-knitr::include_graphics("output/plots/04_plsda_samples_pos.png")
+knitr::include_graphics(file.path("output", "plots", "04_plsda_samples_neg.png"))
+knitr::include_graphics(file.path("output", "plots", "04_plsda_samples_pos.png"))
 ```
 
 (description of sample plots)
@@ -75,8 +75,8 @@ knitr::include_graphics("output/plots/04_plsda_samples_pos.png")
 #| lable: sPLS-DA negative-mode
 #| out-height: 75%
 
-knitr::include_graphics("output/plots/04_plsda_comp1_neg.png")
-knitr::include_graphics("output/plots/04_plsda_comp2_neg.png")
+knitr::include_graphics(file.path("output", "plots", "04_plsda_comp1_neg.png"))
+knitr::include_graphics(file.path("output", "plots", "04_plsda_comp2_neg.png"))
 ```
 
 (explanatory text for neg-mode sPLSDA)
@@ -85,8 +85,8 @@ knitr::include_graphics("output/plots/04_plsda_comp2_neg.png")
 #| lable: sPLS-DA positive-mode
 #| out-height: 75%
 
-knitr::include_graphics("output/plots/04_plsda_comp1_pos.png")
-knitr::include_graphics("output/plots/04_plsda_comp2_pos.png")
+knitr::include_graphics(file.path("output", "plots", "04_plsda_comp1_pos.png"))
+knitr::include_graphics(file.path("output", "plots", "04_plsda_comp2_pos.png"))
 ```
 
 (explanatory text for pos-mode sPLSDA)

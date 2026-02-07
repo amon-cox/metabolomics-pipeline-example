@@ -40,22 +40,29 @@ apply_limma <- function(.intensities, .mode, .md = sample_metadata, .design = de
 limma_output_neg <- apply_limma(.intensities = column_to_rownames(intensity_norm_log2_neg, "mz_rt_min"), .mode = "neg")
 limma_output_pos <- apply_limma(column_to_rownames(intensity_norm_log2_pos, "mz_rt_min"), "pos")
 
-limma_res_neg <- topTable( # extracts features from a linear model fit for viewing in a table
+topTable( # extracts features from a linear model fit for viewing in a table; global differences
     fit = limma_output_neg,
     adjust = "BH", # adjusts p values for multiple comparisons
     number = Inf # grabs all features, not just the top X features
 ) |>
-    rownames_to_column("mz_rt_min")
+    rownames_to_column("mz_rt_min") |>
+    rename( # simplifying some names
+        p = P.Value,
+        p_adj_BH = adj.P.Val
+    ) |>
+    write.csv(file = file.path("output", "tables", "03_limma_global_neg.csv"), row.names = FALSE) # export global feature list
 
-limma_res_pos <- topTable(
+topTable(
     fit = limma_output_pos,
     adjust = "BH",
     number = Inf
 ) |>
-    rownames_to_column("mz_rt_min")
-
-write.csv(limma_res_neg, file = "output/tables/03_limma_global_neg.csv", row.names = FALSE)
-write.csv(limma_res_pos, file = "output/tables/03_limma_global_pos.csv", row.names = FALSE)
+    rownames_to_column("mz_rt_min") |>
+    rename(
+        p = P.Value,
+        p_adj_BH = adj.P.Val
+    ) |>
+    write.csv(file = file.path("output", "tables", "03_limma_global_pos.csv"), row.names = FALSE)
 
 export_limma_res <- function(.limma_output, .mode) { # function to export each contrast
 
@@ -80,7 +87,7 @@ export_limma_res <- function(.limma_output, .mode) { # function to export each c
         
         write.csv(
             filter(res, p_adj_BH < .05 & abs(log2FC) > 1), # export only significant results
-            file = paste0("output/tables/03_limma_", coef_name, "_", .mode, ".csv"),
+            file = file.path("output", "tables", paste0("03_limma_", coef_name, "_", .mode, ".csv")),
             row.names = FALSE
         )
 
@@ -109,7 +116,7 @@ export_limma_res <- function(.limma_output, .mode) { # function to export each c
             )
 
     cowplot::save_plot(
-        filename = paste0("output/plots/03_limma_contrasts_", .mode, ".png"),
+        filename = file.path("output", "plots", paste0("03_limma_contrasts_", .mode, ".png")),
         plot = p_volcano,
         bg = "white"
     )

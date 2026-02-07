@@ -1,9 +1,10 @@
 ## 00) Set up R environment
-# load necessary packages
+# load necessary packages for the entire workflow
 library(vegan)
 library(pairwiseAdonis)
 library(limma)
 library(mixOmics)
+library(KEGGREST)
 library(ggplot2)
 library(viridis)
 library(cowplot)
@@ -14,7 +15,7 @@ library(tibble)
 library(dplyr) # loaded last to give dplyr priority in function name conflicts
 
 # load sample metadata
-sample_metadata <- read.csv("data_raw/sample_metadata.csv", header = TRUE) |>
+sample_metadata <- read.csv(file.path("data_raw", "sample_metadata.csv"), header = TRUE) |>
     mutate(treatment = factor(treatment, levels = c("control", "tr1", "tr2", "tr1+tr2")))
 
 # establish theme for most plots

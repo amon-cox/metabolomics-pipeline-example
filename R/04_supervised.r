@@ -53,21 +53,21 @@ export_splsda <- function(.s_model, .mode) {
     .s_model$variates$X |> # export full sample information; variates
         as.data.frame() |>
         rownames_to_column(var = "sample") |>
-        write.csv(file = paste0("data_processed/04_plsda_variates_", .mode, ".csv"), row.names = FALSE)
+        write.csv(file = file.path("data_processed", paste0("04_plsda_variates_", .mode, ".csv")), row.names = FALSE)
     
     .s_model$loadings$X |> # export full feature information; loadings
         as.data.frame() |>
         rownames_to_column(var = "mz_rt_min") |>
-        write.csv(file = paste0("data_processed/04_plsda_sparse_loadings_", .mode, ".csv"), row.names = FALSE)
+        write.csv(file = file.path("data_processed", paste0("04_plsda_sparse_loadings_", .mode, ".csv")), row.names = FALSE)
     
     .s_model$loadings$Y |> # export loadings associations with treatment groups
         as.data.frame() |>
         rownames_to_column(var = "treatment") |>
-        write.csv(file = paste0("output/tables/04_plsda_loadings_association_", .mode, ".csv"), row.names = FALSE)
+        write.csv(file = file.path("output", "tables", paste0("04_plsda_loadings_association_", .mode, ".csv")), row.names = FALSE)
     
     # prepare retained features for export
     select_features <- full_join(
-        x = selectVar(.s_model, comp = 1)$value |> 
+        x = selectVar(.s_model, comp = 1)$value |> # selectVar can only act on one component at a time
             as.data.frame() |> rownames_to_column(var = "mz_rt_min") |> rename(comp1_value = value.var),
         y = selectVar(.s_model, comp = 2)$value |> 
             as.data.frame() |> rownames_to_column(var = "mz_rt_min") |> rename(comp2_value = value.var),
@@ -76,13 +76,13 @@ export_splsda <- function(.s_model, .mode) {
 
     write.csv(
         select_features,
-        file = paste0("output/tables/04_plsda_select_features_", .mode, ".csv"),
+        file = file.path("output", "tables", paste0("04_plsda_select_features_", .mode, ".csv")),
         row.names = FALSE
     )
 
     # export mixOmics' default plots. Need to use traditional R object setup and dev.off routine
     png( # plot the samples in PLS-DA space
-        filename = paste0("output/plots/04_plsda_samples_", .mode, ".png"),
+        filename = file.path("output", "plots", paste0("04_plsda_samples_", .mode, ".png")),
         width = 6, height = 6, units = "in", res = 300
     )
 
@@ -99,8 +99,8 @@ export_splsda <- function(.s_model, .mode) {
 
     dev.off()
 
-    png(
-        filename = paste0("output/plots/04_plsda_features_", .mode, ".png"),
+    png( # plot features in PLS-DA space
+        filename = file.path("output", "plots", paste0("04_plsda_features_", .mode, ".png")),
         width = 6, height = 6, units = "in", res = 300
     )
     
@@ -113,12 +113,12 @@ export_splsda <- function(.s_model, .mode) {
 
 
     png( # plot the association between features and component 1
-        filename = paste0("output/plots/04_plsda_comp1_", .mode, ".png")
+        filename = file.path("output", "plots", paste0("04_plsda_comp1_", .mode, ".png"))
     )
 
     plotLoadings(
         object = .s_model,
-        comp = 1,
+        comp = 1, # plotLoadings can only act on one component at a time
         title = paste0("sparse PLS-DA comp1 | ", .mode, "-mode"),
         size.title = 1
     )
@@ -126,7 +126,7 @@ export_splsda <- function(.s_model, .mode) {
     dev.off()
 
     png( # plot the association between features and component 2
-        filename = paste0("output/plots/04_plsda_comp2_", .mode, ".png")
+        filename = file.path("output", "plots", paste0("04_plsda_comp2_", .mode, ".png"))
     )
 
     plotLoadings(
