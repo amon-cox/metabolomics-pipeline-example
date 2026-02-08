@@ -98,7 +98,7 @@ In both ionization modes, the first component emphasizes the contrasts induced b
 
 {{< pagebreak >}}
 
-The LC‑MS features driving these separations can be examined via their loadings on each sparse component. For the negative‑mode data, both components retain only 10 features out of 1,499, indicating that the variation in this small subset provides an efficient summary of the treatment‑related differences.
+The LC‑MS features driving these separations can be examined via their loadings on each sparse component. For the negative‑mode data, both components retain fewer than 50 features out of 1,499, indicating that the variation in this small subset provides an efficient summary of the treatment‑related differences.
 
 ```{r}
 #| label: PLS-DA features - negative, comp 1
