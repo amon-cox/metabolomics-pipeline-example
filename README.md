@@ -11,6 +11,8 @@ The data are panels of untargeted LC–MS features from positive and negative io
 - Preprocessing: merge duplicate LC-MS peaks, sample-wise median normalization, log2 transformation.
 - Sample analysis: Principal Components Analysis (PCA), PCA-based outlier detection, and Permutational Analysis of Variance (PERMANOVA) for treatment effects.
 - Feature analysis: linear models with cohort blocking and multiple contrasts (limma).
+- Supervised analysis: sparse Partial Least Squares Discriminant Analysis (sPLS-DA).
+- Annotation: Putative chemical identification through the KEGGREST package to access the Kyoto Encyclopedia of Genes and Genomes (KEGG).
 - Reproducibility: environment managed by renv.
 
 ## Repository Structure
@@ -20,6 +22,10 @@ The data are panels of untargeted LC–MS features from positive and negative io
   - 01_preprocess.r
   - 02_sample_analysis.r
   - 03_feature_analysis.r
+  - 04_supervised.r
+  - 05_significant_features.r
+  - 06a_download_kegg_cpds.r
+  - 06b_annotate_kegg.r
 - data_raw/
 - data_processed/
 - output/
@@ -47,8 +53,5 @@ source("run_all.r")
 - PERMANOVA indicates significant differences amongst metabolomic profiles by treatment group.
 - Pairwise PERMANOVA identifies significant differences which corroborate PCA observations.
 - limma highlights over 1,000 features differentially abundant between tr2 and control groups.
-
-### Upcoming
-
-- Update Quarto overview with KEGG workflow results/example
-- Conclusion and final check on the pipeline
+- Sparse PLS-DA identified minimal feature subsets required to discriminate samples between treatment groups.
+- Significant features were compared against KEGG compound database to produce ~300 putative chemical annotations.
