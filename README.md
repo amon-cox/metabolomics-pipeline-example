@@ -50,4 +50,5 @@ source("run_all.r")
 
 ### Upcoming
 
-- Update Quarto overview with methodology discussion
+- Update Quarto overview with KEGG workflow results/example
+- Conclusion and final check on the pipeline
