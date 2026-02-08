@@ -120,4 +120,36 @@ knitr::include_graphics(file.path("output", "plots", "04_plsda_comp2_pos.png"))
 
 {{< pagebreak >}}
 
+# Putative Annotation
+While sample‑level analyses are useful for detecting systemic effects on the metabolome, feature‑level analyses become more informative once features are placed into a biological context. For untargeted LC–MS data, this requires at least a tentative chemical assignment for each LC–MS peak. Without simultaneous runs against authentic chemical standards, absolute identification and quantification are not possible, but using the measured mass‑to‑charge ratios and ionization mode, the neutral molecular weight of each analyte can be calculated.
+
+In typical LC–MS/MS workflows, this calculation is performed by vendor software during feature detection and deconvolution, producing neutral molecular weights or exact masses alongside peak intensities. These calculated molecular weights can then be compared against metabolite reference databases, such as the Kyoto Encyclopedia of Genes and Genomes (KEGG), by matching them to the exact masses of known compounds.
+
+In this pipeline, features that were either significantly differentially abundant in the limma analysis or retained by the sparse PLS‑DA models were matched to KEGG compounds using their calculated molecular weights. Each feature was compared against the locally cached KEGG compound list, and compounds with exact masses falling within a ±10 ppm window were recorded as putative matches. The table below summarizes example features, their candidate KEGG IDs, names, formulas, and pathways. These assignments are considered putative because they are based solely on accurate‑mass matching and do not incorporate confirmation against authentic standards.
+
+```{r}
+#| label: KEGG annotated compounds table head
+
+putative_annotations <- read.table(
+  file.path("output", "tables", "06_putative_annotations.tsv"),
+  sep = "\t",
+  header = TRUE
+) |>
+  tibble::as_tibble()
+
+select_columns <- dplyr::select(
+  putative_annotations,
+  mz_rt_min,
+  calculated_mw, exact_mass,
+  formula, name
+)
+
+print(select_columns)
+```
+
+In a real study of treatment effects on the metabolome, these candidate annotations would be manually vetted to assess their chemical plausibility and biological relevance. Multiple KEGG compounds can share similar exact masses, so a single LC–MS feature can have several potential matches, which complicates interpretation and reinforces the need for additional structural information (e.g., fragmentation spectra, retention time, or standards) before assigning a definitive identity.
+
+{{< pagebreak >}}
+
 # Conclusion
+Overall, this pipeline demonstrates a typical workflow for analyzing untargeted LC–MS/MS metabolomics data. Median normalization and log2 transformation are used to stabilize feature variances and place intensities on a comparable scale. PCA provides an overview of global metabolomic patterns and highlights the dominant effect of treatment 2. Differential analysis with limma identifies features most strongly associated with each treatment in pairwise contrasts, and sparse PLS‑DA adds a supervised perspective by estimating the minimal set of features needed to classify samples into their respective treatment groups. Finally, differential features prioritized by these analyses are compared against a KEGG compound reference to assemble a set of putative chemical annotations, providing a starting point for biological interpretation and follow‑up validation.

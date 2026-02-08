@@ -1,6 +1,5 @@
 ## 04) Supervised method for sample analysis
 if(!interactive()) pdf(NULL) # prevents pdf artifact from being generated from plots
-set.seed(123)
 
 # conduct a sparse Partial Least Squares Discriminant Analysis
 do_splsda <- function(.intensities, .mode, .md = sample_metadata) {
@@ -17,6 +16,8 @@ do_splsda <- function(.intensities, .mode, .md = sample_metadata) {
     # establish sparsity parameters and tune for sparse variables
     test_keepX <- c(10, 25, 50, 100, 200, 400, 800)
 
+    set.seed(123)
+
     tune_res <- tune.splsda(
         X = X_intensities,
         Y = Y_treatment,
@@ -29,6 +30,8 @@ do_splsda <- function(.intensities, .mode, .md = sample_metadata) {
     keepX_optimal <- tune_res$choice.keepX
 
     # conduct sparse PLS-DA
+    set.seed(123)
+    
     s_model <- mixOmics(
         X = X_intensities,
         Y = Y_treatment,
